@@ -54,7 +54,7 @@ pub fn bell(n: usize) -> BigUint {
 /// ```
 /// let answer = dahl_bellnumber::lbell(5);
 ///
-/// assert_eq!(answer, 52.0.log());
+/// assert!( (answer - 52.0_f64.ln()).abs() < 0.00000001 );
 /// ```
 pub fn lbell(n: usize) -> f64 {
     let value = bell(n);
