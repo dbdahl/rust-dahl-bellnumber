@@ -59,7 +59,7 @@ pub fn bell(n: usize) -> BigUint {
 pub fn lbell(n: usize) -> f64 {
     let value = bell(n);
     let n_bits = value.bits();
-    let threshold = 1022usize;
+    let threshold = 1022_u64;
     let log2 = if n_bits > threshold {
         let n_shifted_bits = value.bits() - threshold;
         let shifted_value = value >> n_shifted_bits;
@@ -111,8 +111,8 @@ mod tests {
 
     #[test]
     fn test_lbell() {
-        relative_eq!(lbell(220), 714.4033);
-        relative_eq!(bell(5).to_f64().unwrap(), 52.0);
+        assert_relative_eq!(lbell(220), 714.4032630589774);
+        assert_relative_eq!(bell(5).to_f64().unwrap(), 52.0);
     }
 
 }
