@@ -76,13 +76,12 @@ struct UniformDistributionCache(Vec<Vec<BigUint>>);
 
 impl UniformDistributionCache {
     pub fn new(n: usize) -> Self {
-        let mut x: Vec<Vec<BigUint>> = (0..(n+1)).map(|k| vec![One::one(); n - k + 1]).collect();
+        let mut x: Vec<Vec<BigUint>> = (0..n).map(|k| vec![One::one(); n - k + 1]).collect();
         for k in (0..(n-1)).rev() {
             for r in 1..(n - k + 1) {
                 x[k][r] = &x[k][r - 1] * (k + 1) + &x[k + 1][r - 1];
             }
         }
-        // println!("{:?}",x);
         Self(x)
     }
 
@@ -149,9 +148,8 @@ mod tests {
 
     #[test]
     fn test_bell_generalized_cache() {
-        let cache = UniformDistributionCache::new(100);
-        //let cache = UniformDistributionCache::new(10);
-        assert_eq!(cache.bell(10), bell(10));
+        let cache = UniformDistributionCache::new(500);
+        assert_eq!(cache.bell(500), bell(500));
         assert_eq!(cache.partition_counter(4, 1), BigUint::from(52_u8));
         assert_eq!(cache.partition_counter(3, 1), BigUint::from(15_u8));
         assert_eq!(cache.partition_counter(3, 2), BigUint::from(37_u8));
@@ -167,11 +165,11 @@ mod tests {
         assert_eq!(cache.partition_counter(0, 3), BigUint::from(1_u8));
         assert_eq!(cache.partition_counter(0, 4), BigUint::from(1_u8));
         assert_eq!(cache.partition_counter(0, 5), BigUint::from(1_u8));
-        let c = 20;
-        let (a, b) = cache.probs_for_uniform(80, c);
-        assert_eq!((c as f64) * a + b, 1.0);
+        let c = 60;
+        let (a, b) = cache.probs_for_uniform(280, c);
+        assert_relative_eq!((c as f64) * a + b, 1.0);
         let c = 4;
-        let (a, b) = cache.probs_for_uniform(50, c);
-        assert_eq!((c as f64) * a + b, 1.0);
+        let (a, b) = cache.probs_for_uniform(390, c);
+        assert_relative_eq!((c as f64) * a + b, 1.0);
     }
 }
