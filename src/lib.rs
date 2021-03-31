@@ -55,19 +55,22 @@ pub fn bell(n: usize) -> BigUint {
 /// assert!( (answer - 52.0_f64.ln()).abs() < 0.00000001 );
 /// ```
 pub fn lbell(n: usize) -> f64 {
-    let value = bell(n);
-    let n_bits = value.bits();
+    log(bell(n))
+}
+
+fn log(x: BigUint) -> f64 {
+    let n_bits = x.bits();
     let threshold = 1022_u64;
     let log2 = if n_bits > threshold {
-        let n_shifted_bits = value.bits() - threshold;
-        let shifted_value = value >> n_shifted_bits;
+        let n_shifted_bits = x.bits() - threshold;
+        let shifted_value = x >> n_shifted_bits;
         if shifted_value.bits() > threshold {
             return f64::INFINITY;
         }
         let y: f64 = shifted_value.to_f64().unwrap();
         (n_shifted_bits as f64) + y.log2()
     } else {
-        value.to_f64().unwrap().log2()
+        x.to_f64().unwrap().log2()
     };
     log2 / std::f64::consts::LOG2_E
 }
@@ -88,6 +91,10 @@ impl UniformDistributionCache {
 
     pub fn bell(&self, n: usize) -> BigUint {
         self.partition_counter(n-1, 1)
+    }
+
+    pub fn lbell(&self, n: usize) -> f64 {
+        log(self.partition_counter(n-1, 1))
     }
 
     pub fn partition_counter(
