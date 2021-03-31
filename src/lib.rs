@@ -72,6 +72,7 @@ pub fn lbell(n: usize) -> f64 {
     log2 / std::f64::consts::LOG2_E
 }
 
+#[derive(Debug, Clone)]
 pub struct UniformDistributionCache(Vec<Vec<BigUint>>);
 
 impl UniformDistributionCache {
