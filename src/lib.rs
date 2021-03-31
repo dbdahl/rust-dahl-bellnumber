@@ -108,7 +108,6 @@ impl UniformDistributionCache {
 }
 
 /// C-friendly wrapper over the `bell` function.
-///
 #[doc(hidden)]
 #[no_mangle]
 pub extern "C" fn dahl_bellnumber__bell(n: i32) -> f64 {
@@ -125,7 +124,6 @@ pub extern "C" fn dahl_bellnumber__bell(n: i32) -> f64 {
 }
 
 /// C-friendly wrapper over the `lbell` function.
-///
 #[doc(hidden)]
 #[no_mangle]
 pub extern "C" fn dahl_bellnumber__lbell(n: i32) -> f64 {
