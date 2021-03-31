@@ -13,10 +13,10 @@ extern crate approx;
 extern crate num_bigint;
 
 use num_bigint::BigUint;
+use num_rational::Ratio;
 use num_traits::cast::ToPrimitive;
 use num_traits::{One, Zero};
 use std::convert::TryFrom;
-use std::f64;
 
 /// Compute the [Bell number](https://en.wikipedia.org/wiki/Bell_number).
 ///
@@ -40,9 +40,7 @@ pub fn bell(n: usize) -> BigUint {
         for i in 1..(k + 1) {
             r2[i] = r1[i - 1].clone() + &r2[i - 1];
         }
-        let tmp = r1;
-        r1 = r2;
-        r2 = tmp;
+        std::mem::swap(&mut r1, &mut r2);
     }
     r1[n - 1].clone()
 }
@@ -71,7 +69,42 @@ pub fn lbell(n: usize) -> f64 {
     } else {
         value.to_f64().unwrap().log2()
     };
-    log2 / f64::consts::LOG2_E
+    log2 / std::f64::consts::LOG2_E
+}
+
+struct UniformDistributionCache(Vec<Vec<BigUint>>);
+
+impl UniformDistributionCache {
+    pub fn new(n: usize) -> Self {
+        let mut x: Vec<Vec<BigUint>> = (0..n).map(|k| vec![One::one(); n - k + 1]).collect();
+        for k in (0..(n + 1)).rev() {
+            for nn in 2..(n - k + 1) {
+                x[k][nn] = &x[k][nn - 1] * (k + 1) + &x[k + 1][nn - 1];
+            }
+        }
+        Self(x)
+    }
+
+    pub fn bell(&self, n: usize) -> BigUint {
+        self.partition_counter(n, 1)
+    }
+
+    pub fn partition_counter(
+        &self,
+        n_items_to_allocate: usize,
+        n_clusters_after_allocation: usize,
+    ) -> BigUint {
+        self.0[n_clusters_after_allocation - 1][n_items_to_allocate].clone()
+    }
+
+    pub fn probs_for_uniform(&self, n_items_to_allocate: usize, n_clusters: usize) -> (f64, f64) {
+        let a = self.partition_counter(n_items_to_allocate - 1, n_clusters);
+        let b = self.partition_counter(n_items_to_allocate - 1, n_clusters + 1);
+        let denominator = self.partition_counter(n_items_to_allocate, n_clusters);
+        let left = Ratio::new(a, denominator.clone()).to_f64().unwrap();
+        let right = Ratio::new(b, denominator).to_f64().unwrap();
+        (left, right)
+    }
 }
 
 /// C-friendly wrapper over the `bell` function.
@@ -115,4 +148,15 @@ mod tests {
         assert_relative_eq!(bell(5).to_f64().unwrap(), 52.0);
     }
 
+    #[test]
+    fn test_bell_generalized_cache() {
+        let cache = UniformDistributionCache::new(1000);
+        assert_eq!(cache.bell(100), bell(100));
+        assert_eq!(cache.partition_counter(4, 2), BigUint::from(37_u8));
+        assert_eq!(cache.partition_counter(3, 2), BigUint::from(10_u8));
+        assert_eq!(cache.partition_counter(2, 3), BigUint::from(4_u8));
+        assert_eq!(cache.partition_counter(2, 2), BigUint::from(3_u8));
+        let (a, b) = cache.probs_for_uniform(800, 150);
+        assert_eq!(150.0 * a + b, 1.0);
+    }
 }
