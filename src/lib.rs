@@ -76,31 +76,32 @@ struct UniformDistributionCache(Vec<Vec<BigUint>>);
 
 impl UniformDistributionCache {
     pub fn new(n: usize) -> Self {
-        let mut x: Vec<Vec<BigUint>> = (0..n).map(|k| vec![One::one(); n - k + 1]).collect();
-        for k in (0..(n + 1)).rev() {
-            for nn in 2..(n - k + 1) {
-                x[k][nn] = &x[k][nn - 1] * (k + 1) + &x[k + 1][nn - 1];
+        let mut x: Vec<Vec<BigUint>> = (0..(n+1)).map(|k| vec![One::one(); n - k + 1]).collect();
+        for k in (0..(n-1)).rev() {
+            for r in 1..(n - k + 1) {
+                x[k][r] = &x[k][r - 1] * (k + 1) + &x[k + 1][r - 1];
             }
         }
+        // println!("{:?}",x);
         Self(x)
     }
 
     pub fn bell(&self, n: usize) -> BigUint {
-        self.partition_counter(n, 1)
+        self.partition_counter(n-1, 1)
     }
 
     pub fn partition_counter(
         &self,
-        n_items_to_allocate: usize,
+        n_remaining_items_after_allocation: usize,
         n_clusters_after_allocation: usize,
     ) -> BigUint {
-        self.0[n_clusters_after_allocation - 1][n_items_to_allocate].clone()
+        self.0[n_clusters_after_allocation-1][n_remaining_items_after_allocation].clone()
     }
 
-    pub fn probs_for_uniform(&self, n_items_to_allocate: usize, n_clusters: usize) -> (f64, f64) {
-        let a = self.partition_counter(n_items_to_allocate - 1, n_clusters);
-        let b = self.partition_counter(n_items_to_allocate - 1, n_clusters + 1);
-        let denominator = self.partition_counter(n_items_to_allocate, n_clusters);
+    pub fn probs_for_uniform(&self, n_remaining_items_after_allocation: usize, n_clusters_after_allocation: usize) -> (f64, f64) {
+        let a = self.partition_counter(n_remaining_items_after_allocation - 1, n_clusters_after_allocation);
+        let b = self.partition_counter(n_remaining_items_after_allocation - 1, n_clusters_after_allocation + 1);
+        let denominator = self.partition_counter(n_remaining_items_after_allocation, n_clusters_after_allocation);
         let left = Ratio::new(a, denominator.clone()).to_f64().unwrap();
         let right = Ratio::new(b, denominator).to_f64().unwrap();
         (left, right)
@@ -148,13 +149,29 @@ mod tests {
 
     #[test]
     fn test_bell_generalized_cache() {
-        let cache = UniformDistributionCache::new(1000);
-        assert_eq!(cache.bell(100), bell(100));
-        assert_eq!(cache.partition_counter(4, 2), BigUint::from(37_u8));
-        assert_eq!(cache.partition_counter(3, 2), BigUint::from(10_u8));
-        assert_eq!(cache.partition_counter(2, 3), BigUint::from(4_u8));
-        assert_eq!(cache.partition_counter(2, 2), BigUint::from(3_u8));
-        let (a, b) = cache.probs_for_uniform(800, 150);
-        assert_eq!(150.0 * a + b, 1.0);
+        let cache = UniformDistributionCache::new(100);
+        //let cache = UniformDistributionCache::new(10);
+        assert_eq!(cache.bell(10), bell(10));
+        assert_eq!(cache.partition_counter(4, 1), BigUint::from(52_u8));
+        assert_eq!(cache.partition_counter(3, 1), BigUint::from(15_u8));
+        assert_eq!(cache.partition_counter(3, 2), BigUint::from(37_u8));
+        assert_eq!(cache.partition_counter(2, 1), BigUint::from(5_u8));
+        assert_eq!(cache.partition_counter(2, 2), BigUint::from(10_u8));
+        assert_eq!(cache.partition_counter(2, 3), BigUint::from(17_u8));
+        assert_eq!(cache.partition_counter(1, 1), BigUint::from(2_u8));
+        assert_eq!(cache.partition_counter(1, 2), BigUint::from(3_u8));
+        assert_eq!(cache.partition_counter(1, 3), BigUint::from(4_u8));
+        assert_eq!(cache.partition_counter(1, 4), BigUint::from(5_u8));
+        assert_eq!(cache.partition_counter(0, 1), BigUint::from(1_u8));
+        assert_eq!(cache.partition_counter(0, 2), BigUint::from(1_u8));
+        assert_eq!(cache.partition_counter(0, 3), BigUint::from(1_u8));
+        assert_eq!(cache.partition_counter(0, 4), BigUint::from(1_u8));
+        assert_eq!(cache.partition_counter(0, 5), BigUint::from(1_u8));
+        let c = 20;
+        let (a, b) = cache.probs_for_uniform(80, c);
+        assert_eq!((c as f64) * a + b, 1.0);
+        let c = 4;
+        let (a, b) = cache.probs_for_uniform(50, c);
+        assert_eq!((c as f64) * a + b, 1.0);
     }
 }
