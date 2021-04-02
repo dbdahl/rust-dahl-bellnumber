@@ -81,7 +81,7 @@ pub struct UniformDistributionCache(Vec<Vec<BigUint>>);
 impl UniformDistributionCache {
     pub fn new(n: usize) -> Self {
         let mut x: Vec<Vec<BigUint>> = (0..n).map(|k| vec![One::one(); n - k + 1]).collect();
-        for k in (0..(n-1)).rev() {
+        for k in (0..(n - 1)).rev() {
             for r in 1..(n - k + 1) {
                 x[k][r] = &x[k][r - 1] * (k + 1) + &x[k + 1][r - 1];
             }
@@ -90,11 +90,11 @@ impl UniformDistributionCache {
     }
 
     pub fn bell(&self, n: usize) -> BigUint {
-        self.partition_counter(n-1, 1)
+        self.partition_counter(n - 1, 1)
     }
 
     pub fn lbell(&self, n: usize) -> f64 {
-        log(self.partition_counter(n-1, 1))
+        log(self.partition_counter(n - 1, 1))
     }
 
     pub fn partition_counter(
@@ -102,13 +102,29 @@ impl UniformDistributionCache {
         n_remaining_items_after_allocation: usize,
         n_clusters_after_allocation: usize,
     ) -> BigUint {
-        self.0[n_clusters_after_allocation-1][n_remaining_items_after_allocation].clone()
+        self.0[n_clusters_after_allocation - 1][n_remaining_items_after_allocation].clone()
     }
 
-    pub fn probs_for_uniform(&self, n_remaining_items_after_allocation: usize, n_clusters_after_allocation: usize) -> (f64, f64) {
-        let a = self.partition_counter(n_remaining_items_after_allocation - 1, n_clusters_after_allocation);
-        let b = self.partition_counter(n_remaining_items_after_allocation - 1, n_clusters_after_allocation + 1);
-        let denominator = self.partition_counter(n_remaining_items_after_allocation, n_clusters_after_allocation);
+    pub fn probs_for_uniform(
+        &self,
+        n_remaining_items_after_allocation: usize,
+        n_clusters_after_allocation: usize,
+    ) -> (f64, f64) {
+        if n_clusters_after_allocation == 0 {
+            return (0., 1.);
+        }
+        let a = self.partition_counter(
+            n_remaining_items_after_allocation - 1,
+            n_clusters_after_allocation,
+        );
+        let b = self.partition_counter(
+            n_remaining_items_after_allocation - 1,
+            n_clusters_after_allocation + 1,
+        );
+        let denominator = self.partition_counter(
+            n_remaining_items_after_allocation,
+            n_clusters_after_allocation,
+        );
         let left = Ratio::new(a, denominator.clone()).to_f64().unwrap();
         let right = Ratio::new(b, denominator).to_f64().unwrap();
         (left, right)
