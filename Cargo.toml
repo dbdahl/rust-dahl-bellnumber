@@ -1,11 +1,12 @@
 [package]
 name = "dahl-bellnumber"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["David B. Dahl <dahl@stat.byu.edu>"]
-edition = "2021"
+edition = "2024"
 description = "In combinatorial mathematics, the Bell numbers count the possible partitions of a set.  https://en.wikipedia.org/wiki/Bell_number"
 homepage = "https://dahl.byu.edu"
 license = "MIT OR Apache-2.0"
+rust-version = "1.88"
 
 [dependencies]
 num-bigint = "0.4.0"
