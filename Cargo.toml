@@ -6,7 +6,7 @@ edition = "2024"
 description = "In combinatorial mathematics, the Bell numbers count the possible partitions of a set.  https://en.wikipedia.org/wiki/Bell_number"
 homepage = "https://dahl.byu.edu"
 license = "MIT OR Apache-2.0"
-rust-version = "1.88"
+rust-version = "1.85.1"
 
 [dependencies]
 num-bigint = "0.4.0"
