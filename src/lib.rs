@@ -139,10 +139,7 @@ pub extern "C" fn dahl_bellnumber__bell(n: i32) -> f64 {
         return 0.0;
     }
     match usize::try_from(n) {
-        Ok(n) => match bell(n).to_f64() {
-            Some(x) => x,
-            None => f64::INFINITY,
-        },
+        Ok(n) => bell(n).to_f64().unwrap_or(f64::INFINITY),
         Err(_) => f64::INFINITY,
     }
 }
