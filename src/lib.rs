@@ -32,6 +32,9 @@ use std::convert::TryFrom;
 /// assert_eq!(answer.to_f64().unwrap(), 52.0);
 /// ```
 pub fn bell(n: usize) -> BigUint {
+    if n == 0 {
+        return One::one();
+    }
     let mut r1: Vec<BigUint> = vec![Zero::zero(); n];
     let mut r2: Vec<BigUint> = vec![Zero::zero(); n];
     r1[0] = One::one();
@@ -160,6 +163,17 @@ pub extern "C" fn dahl_bellnumber__lbell(n: i32) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_bell_small() {
+        let expected = [1_u8, 1, 2, 5, 15, 52];
+        for (n, &b) in expected.iter().enumerate() {
+            assert_eq!(bell(n), BigUint::from(b));
+        }
+        assert_eq!(lbell(0), 0.0);
+        assert_eq!(dahl_bellnumber__bell(0), 1.0);
+        assert_eq!(dahl_bellnumber__lbell(0), 0.0);
+    }
 
     #[test]
     fn test_lbell() {
